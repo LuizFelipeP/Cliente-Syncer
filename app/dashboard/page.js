@@ -10,6 +10,11 @@ export default function Dashboard() {
     const [gastos, setGastos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    //editargasto iinline
+    const [editandoId, setEditandoId] = useState(null);
+    const [descricaoEdit, setDescricaoEdit] = useState("");
+    const [valorEdit, setValorEdit] = useState("");
+
     // Carregar os dados do usuário
     useEffect(() => {
         const fetchUserData = async () => {
@@ -71,26 +76,83 @@ export default function Dashboard() {
             <h1>Dashboard</h1>
             <div>
                 <h2>Bem-vindo, {usuario?.nome || "Usuário"}</h2>
-                <button onClick={() => router.push("/edit-user")}>Editar Informações</button>
+                <button onClick={() => router.push("/edit-user")}>
+                    Editar Informações
+                </button>
             </div>
 
             <div>
                 <h3>Gastos Registrados</h3>
-                <button onClick={() => router.push("/add-gasto")}>Adicionar Gasto</button>
+                <button onClick={() => router.push("/add-gasto")}>
+                    Adicionar Gasto
+                </button>
 
                 <ul>
                     {gastos.length > 0 ? (
                         gastos.map((gasto) => (
                             <li key={gasto.id}>
-                                <span>{gasto.descricao} - R${gasto.valor} - {gasto.nome}</span>
-                                <button onClick={() => handleEditGasto(gasto.id, gasto)}>Editar</button>
-                                <button onClick={() => handleRemoveGasto(gasto.id)}>Remover</button>
+                                {editandoId === gasto.id ? (
+                                    <>
+                                        <input
+                                            type="text"
+                                            value={descricaoEdit}
+                                            onChange={(e) => setDescricaoEdit(e.target.value)}
+                                            placeholder="Descrição"
+                                        />
+                                        <input
+                                            type="number"
+                                            value={valorEdit}
+                                            onChange={(e) => setValorEdit(e.target.value)}
+                                            placeholder="Valor"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                handleEditGasto(gasto.id, {
+                                                    ...gasto,
+                                                    descricao: descricaoEdit,
+                                                    valor: parseFloat(valorEdit),
+                                                    sincronizado: false, // Marca como não sincronizado
+                                                });
+                                                setEditandoId(null);
+                                            }}
+                                        >
+                                            Salvar
+                                        </button>
+                                        <button onClick={() => setEditandoId(null)}>
+                                            Cancelar
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>
+                                            {gasto.descricao} - R${gasto.valor} - {gasto.nome}
+                                        </span>
+                                        <button
+                                            onClick={() => {
+                                                setEditandoId(gasto.id);
+                                                setDescricaoEdit(gasto.descricao);
+                                                setValorEdit(gasto.valor);
+                                            }}
+                                        >
+                                            Editar
+                                        </button>
+                                        <button onClick={() => handleRemoveGasto(gasto.id)}>
+                                            Remover
+                                        </button>
+                                    </>
+                                )}
                             </li>
                         ))
                     ) : (
                         <p>Nenhum gasto registrado.</p>
                     )}
                 </ul>
+            </div>
+            <div>
+                <h2></h2>
+                <button onClick={() => router.push("/")}>
+                    Logoff
+                </button>
             </div>
         </div>
     );
@@ -105,7 +167,7 @@ export async function getUserData() {
         if (!userId) {
             throw new Error("Usuário não autenticado.");
         }
-        const response = await fetch(`http://192.168.0.2:3008/api/user?id=${userId}`);
+        const response = await fetch(`http://192.168.0.7:3008/api/user?id=${userId}`);
 
         if (!response.ok) {
             const errorText = await response.text();
