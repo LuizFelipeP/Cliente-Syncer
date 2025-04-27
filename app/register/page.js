@@ -5,17 +5,18 @@ export default function Register() {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [familia, setFamilia] = useState("");
     const [error, setError] = useState("");
 
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const response = await fetch("http://192.168.0.7:3008/api/auth/register", {
+        const response = await fetch("http://192.168.0.11:3008/api/auth/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, username, password }),
+            body: JSON.stringify({ email, username, password, familia }),
         });
 
         const data = await response.json();
@@ -47,6 +48,12 @@ export default function Register() {
                     type="password"
                     placeholder="Senha"
                     onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                <input
+                    type="text"
+                    placeholder="Nome da Família"
+                    onChange={(e) => setFamilia(e.target.value)}
                     required
                 />
                 <button type="submit">Registrar</button>

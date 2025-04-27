@@ -17,7 +17,7 @@ export default function EditUserPage() {
 
             try {
                 const response = await fetch(
-                    `http://192.168.0.7:3008/api/user?id=${userId}`
+                    `http://192.168.0.11:3008/api/user?id=${userId}`
                 );
                 if (!response.ok) throw new Error("Erro ao carregar usuário");
 
@@ -38,7 +38,7 @@ export default function EditUserPage() {
         if (!userId) return;
 
         try {
-            const response = await fetch("http://192.168.0.7:3008/api/auth/update-user", {
+            const response = await fetch("http://192.168.0.11:3008/api/auth/update-user", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

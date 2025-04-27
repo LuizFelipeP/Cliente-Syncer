@@ -1,7 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { addGasto, removeGasto, editGasto, getGastos, yDoc, yGastos } from "@/lib/yjsClient";
+import {
+    inicializarYjs,  // IMPORTA A FUNÇÃO NOVA
+    addGasto,
+    removeGasto,
+    editGasto,
+    getGastos,
+    yGastos
+} from "@/lib/yjsClient";
 import { sincronizarComServidor } from "@/lib/sync";
 
 export default function Dashboard() {
@@ -10,63 +17,76 @@ export default function Dashboard() {
     const [gastos, setGastos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    //editargasto iinline
     const [editandoId, setEditandoId] = useState(null);
     const [descricaoEdit, setDescricaoEdit] = useState("");
     const [valorEdit, setValorEdit] = useState("");
 
-    // Carregar os dados do usuário
     useEffect(() => {
-        const fetchUserData = async () => {
+        const inicializarDashboard = async () => {
             try {
                 const user = await getUserData();
-                if (user) {
-                    setUsuario(user);
+
+                if (!user) {
+                    throw new Error("Usuário não encontrado");
                 }
+
+                setUsuario(user);
+
+                // Inicializa o Yjs para a família específica
+                await inicializarYjs(user.familia_id);
+
+                // Depois que o Yjs estiver pronto, sincroniza com servidor
+                await sincronizarComServidor(user.familia_id);
+
+                // Agora carrega os gastos filtrados
+                const todosGastos = getGastos();
+                const gastosDaFamilia = todosGastos.filter(
+                    (gasto) => gasto.familia_id === user.familia_id
+                );
+
+                setGastos(gastosDaFamilia);
             } catch (error) {
-                console.error("Erro ao buscar usuário:", error);
+                console.error("Erro ao inicializar dashboard:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchUserData();
+        inicializarDashboard();
     }, []);
 
-    // Buscar gastos e sincronizar com o servidor
     useEffect(() => {
-        const syncAndLoadData = async () => {
-            await sincronizarComServidor();
-            setGastos(getGastos());
+        if (!yGastos) return;
+
+        const updateUI = () => {
+            if (usuario) {
+                const todosGastos = getGastos();
+                const gastosDaFamilia = todosGastos.filter(
+                    (gasto) => gasto.familia_id === usuario.familia_id
+                );
+                setGastos(gastosDaFamilia);
+            }
         };
-        syncAndLoadData();
-    }, []);
-
-    // Observar mudanças nos gastos e atualizar a UI automaticamente
-    useEffect(() => {
-        const updateUI = () => setGastos(getGastos());
 
         yGastos.observe(updateUI);
 
-        return () => yGastos.unobserve(updateUI); // Remover observador ao desmontar
-    }, []);
+        return () => {
+            yGastos.unobserve(updateUI);
+        };
+    }, [usuario]); // Só observar depois que o usuário estiver carregado
 
-    // Adicionar um novo gasto
     const handleAddGasto = (gasto) => {
         addGasto(gasto);
     };
 
-    // Remover um gasto
     const handleRemoveGasto = (gastoId) => {
         removeGasto(gastoId);
     };
 
-    // Editar um gasto
     const handleEditGasto = (gastoId, updatedGasto) => {
         editGasto(gastoId, updatedGasto);
     };
 
-    // Enquanto os dados estão carregando, exibir um loading
     if (isLoading) {
         return <p>Carregando...</p>;
     }
@@ -111,7 +131,7 @@ export default function Dashboard() {
                                                     ...gasto,
                                                     descricao: descricaoEdit,
                                                     valor: parseFloat(valorEdit),
-                                                    sincronizado: false, // Marca como não sincronizado
+                                                    sincronizado: false,
                                                 });
                                                 setEditandoId(null);
                                             }}
@@ -125,7 +145,7 @@ export default function Dashboard() {
                                 ) : (
                                     <>
                                         <span>
-                                            {gasto.descricao} - R${gasto.valor} - {gasto.nome}
+                                            {gasto.descricao} - R${gasto.valor} - {gasto.nome} - {gasto.familia_id}
                                         </span>
                                         <button
                                             onClick={() => {
@@ -148,8 +168,8 @@ export default function Dashboard() {
                     )}
                 </ul>
             </div>
+
             <div>
-                <h2></h2>
                 <button onClick={() => router.push("/")}>
                     Logoff
                 </button>
@@ -161,13 +181,13 @@ export default function Dashboard() {
 // Função para obter os dados do usuário
 export async function getUserData() {
     try {
-        // Obter userId do localStorage
         const userId = localStorage.getItem("userId");
 
         if (!userId) {
             throw new Error("Usuário não autenticado.");
         }
-        const response = await fetch(`http://192.168.0.7:3008/api/user?id=${userId}`);
+
+        const response = await fetch(`http://192.168.0.11:3008/api/user?id=${userId}`);
 
         if (!response.ok) {
             const errorText = await response.text();

@@ -25,7 +25,10 @@ export default function AddGasto() {
             return;
         }
 
+        const usuario = await getUserData(); // Agora vamos pegar também o familia_id
+
         const nomeUsuario = await getUserData();
+        console.log(usuario.familia_id);
 
         // Criar gasto localmente
         const novoGasto = {
@@ -35,6 +38,7 @@ export default function AddGasto() {
             timestamp_criacao: new Date().toISOString(),
             criadoPor: userId, // 🔥 Salvando o ID do criador
             nome: nomeUsuario.nome,
+            familia_id: usuario.familia_id, // 🧩 Adiciona aqui o id da família!
             sincronizado: false, // Status de sincronização
         };
 
