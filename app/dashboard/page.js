@@ -87,19 +87,27 @@ export default function Dashboard() {
         editGasto(gastoId, updatedGasto);
     };
 
+    const handleSync = async () => {
+        if (usuario) {
+            console.log("🔄 Sincronizando manualmente...");
+            await sincronizarComServidor(usuario.familia_id);
+        }
+    };
+
     if (isLoading) {
         return <p>Carregando...</p>;
     }
 
     return (
         <div>
-            <h1>Dashboard</h1>
-            <div>
-                <h2>Bem-vindo, {usuario?.nome || "Usuário"}</h2>
-                <button onClick={() => router.push("/edit-user")}>
-                    Editar Informações
-                </button>
-            </div>
+            <h2>Bem-vindo, {usuario?.nome || "Usuário"}</h2>
+            <button onClick={() => router.push("/edit-user")}>
+                Editar Informações
+            </button>
+            <button onClick={handleSync}>
+               _      🔄
+            </button>
+
 
             <div>
                 <h3>Gastos Registrados</h3>
@@ -187,7 +195,7 @@ export async function getUserData() {
             throw new Error("Usuário não autenticado.");
         }
 
-        const response = await fetch(`http://192.168.0.11:3008/api/user?id=${userId}`);
+        const response = await fetch(`http://192.168.0.2:3008/api/user?id=${userId}`);
 
         if (!response.ok) {
             const errorText = await response.text();
