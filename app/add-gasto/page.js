@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addGasto } from "@/lib/yjsClient";
-import { getUserData } from "../dashboard/page.js"
+import { getUserData } from "../dashboard/page.js";
 import { v4 as uuidv4 } from 'uuid';
 
 export default function AddGasto() {
@@ -18,35 +18,38 @@ export default function AddGasto() {
             return;
         }
 
-        // Obter userId do localStorage
         const userId = localStorage.getItem("userId");
         if (!userId) {
             alert("Erro: Usuário não autenticado!");
             return;
         }
 
-        const usuario = await getUserData(); // Agora vamos pegar também o familia_id
+        const usuario = await getUserData();
 
-        const nomeUsuario = await getUserData();
-        console.log(usuario.familia_id);
+        const gastoId = uuidv4(); // Gasto ID individual
 
-        // Criar gasto localmente
         const novoGasto = {
-            id: uuidv4(), // ID local
+            id: gastoId,
             descricao,
             valor: parseFloat(valor),
             timestamp_criacao: new Date().toISOString(),
-            criadoPor: userId, // 🔥 Salvando o ID do criador
-            nome: nomeUsuario.nome,
-            familia_id: usuario.familia_id, // 🧩 Adiciona aqui o id da família!
-            sincronizado: false, // Status de sincronização
+            criadoPor: userId,
+            nome: usuario.nome,
+            familia_id: usuario.familia_id,
+            sincronizado: false,
+            removido:false,
         };
+        console.log(novoGasto);
 
-        await addGasto(novoGasto); // Salvar no IndexedDB
-        console.log("📢 Gasto salvo localmente:", novoGasto);
-        router.push("/dashboard"); // Voltar para o Dashboard
+        try {
+            await addGasto(novoGasto);
+            console.log("📢 Gasto salvo localmente:", novoGasto);
+            router.push("/dashboard");
+        } catch (error) {
+            console.error("❌ Erro ao adicionar gasto:", error);
+            alert("Erro ao salvar gasto.");
+        }
     };
-
 
     return (
         <div>

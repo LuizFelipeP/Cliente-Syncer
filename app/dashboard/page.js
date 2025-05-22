@@ -1,15 +1,18 @@
+
+
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-    inicializarYjs,  // IMPORTA A FUNÇÃO NOVA
+    inicializarYjsParaGasto,
     addGasto,
     removeGasto,
     editGasto,
     getGastos,
-    yGastos
 } from "@/lib/yjsClient";
 import { sincronizarComServidor } from "@/lib/sync";
+
+import styles from './dashboard.module.css';
 
 export default function Dashboard() {
     const router = useRouter();
@@ -22,140 +25,121 @@ export default function Dashboard() {
     const [valorEdit, setValorEdit] = useState("");
 
     useEffect(() => {
-        const inicializarDashboard = async () => {
+        const init = async () => {
             try {
                 const user = await getUserData();
-
-                if (!user) {
-                    throw new Error("Usuário não encontrado");
-                }
-
+                if (!user) throw new Error("Usuário não encontrado");
                 setUsuario(user);
 
-                // Inicializa o Yjs para a família específica
-                await inicializarYjs(user.familia_id);
-
-                // Depois que o Yjs estiver pronto, sincroniza com servidor
+                // 1) Sincroniza TODOS os docs de gasto já inicializados
                 await sincronizarComServidor(user.familia_id);
 
-                // Agora carrega os gastos filtrados
-                const todosGastos = getGastos();
-                const gastosDaFamilia = todosGastos.filter(
-                    (gasto) => gasto.familia_id === user.familia_id
-                );
-
-                setGastos(gastosDaFamilia);
-            } catch (error) {
-                console.error("Erro ao inicializar dashboard:", error);
+                // 2) Depois de aplicado o update, pega tudo do yjsClient
+                const todos = getGastos().filter(g => g.familia_id === user.familia_id && !g.removido);
+                setGastos(todos);
+            } catch (err) {
+                console.error("Erro ao inicializar dashboard:", err);
             } finally {
                 setIsLoading(false);
             }
         };
-
-        inicializarDashboard();
+        init();
     }, []);
 
-    useEffect(() => {
-        if (!yGastos) return;
+    // --- Removi completamente este useEffect ---
+    // useEffect(() => {
+    //   if (!yGastos) return;
+    //   const updateUI = () => { … }
+    //   yGastos.observe(updateUI);
+    //   return () => yGastos.unobserve(updateUI);
+    // }, [usuario]);
 
-        const updateUI = () => {
-            if (usuario) {
-                const todosGastos = getGastos();
-                const gastosDaFamilia = todosGastos.filter(
-                    (gasto) => gasto.familia_id === usuario.familia_id
-                );
-                setGastos(gastosDaFamilia);
-            }
-        };
-
-        yGastos.observe(updateUI);
-
-        return () => {
-            yGastos.unobserve(updateUI);
-        };
-    }, [usuario]); // Só observar depois que o usuário estiver carregado
-
-    const handleAddGasto = (gasto) => {
-        addGasto(gasto);
+    const handleAddGasto = async (gasto) => {
+        await addGasto(gasto);
+        setGastos(prev => [...prev, gasto]);
     };
 
     const handleRemoveGasto = (gastoId) => {
         removeGasto(gastoId);
+        setGastos(prev => prev.filter(g => g.id !== gastoId));
     };
 
-    const handleEditGasto = (gastoId, updatedGasto) => {
-        editGasto(gastoId, updatedGasto);
+    const handleEditGasto = async (gastoId, updated) => {
+        await editGasto(gastoId, updated);
+        setGastos(prev =>
+            prev.map(g => (g.id === gastoId ? { ...g, ...updated } : g))
+        );
+        setEditandoId(null);
     };
 
     const handleSync = async () => {
-        if (usuario) {
-            console.log("🔄 Sincronizando manualmente...");
-            await sincronizarComServidor(usuario.familia_id);
-        }
+        if (!usuario) return;
+        await sincronizarComServidor(usuario.familia_id);
+        const todos = getGastos().filter(g => g.familia_id === usuario.familia_id && !g.removido);
+        setGastos(todos);
     };
 
-    if (isLoading) {
-        return <p>Carregando...</p>;
-    }
+    if (isLoading) return <p>Carregando...</p>;
 
     return (
-        <div>
-            <h2>Bem-vindo, {usuario?.nome || "Usuário"}</h2>
-            <button onClick={() => router.push("/edit-user")}>
-                Editar Informações
-            </button>
-            <button onClick={handleSync}>
-               _      🔄
-            </button>
+        <div className={styles.container}>
+            <h2 className={styles.title}>Bem-vindo, {usuario.nome}</h2>
 
+            <div className={styles.buttonsRow}>
+                <button className={styles.button} onClick={() => router.push("/edit-user")}>
+                    Editar Informações
+                </button>
+                <button className={styles.button} onClick={handleSync}>🔄 Sincronizar</button>
+            </div>
 
-            <div>
-                <h3>Gastos Registrados</h3>
-                <button onClick={() => router.push("/add-gasto")}>
+            <section className={styles.section}>
+                <h3 className={styles.subtitle}>Gastos Registrados</h3>
+                <button className={styles.button} onClick={() => router.push("/add-gasto")}>
                     Adicionar Gasto
                 </button>
-
-                <ul>
+                <ul className={styles.gastosList}>
                     {gastos.length > 0 ? (
-                        gastos.map((gasto) => (
-                            <li key={gasto.id}>
+                        gastos.map(gasto => (
+                            <li key={gasto.id} className={styles.gastoItem}>
                                 {editandoId === gasto.id ? (
                                     <>
                                         <input
+                                            className={styles.input}
                                             type="text"
                                             value={descricaoEdit}
-                                            onChange={(e) => setDescricaoEdit(e.target.value)}
-                                            placeholder="Descrição"
+                                            onChange={e => setDescricaoEdit(e.target.value)}
                                         />
                                         <input
+                                            className={styles.input}
                                             type="number"
                                             value={valorEdit}
-                                            onChange={(e) => setValorEdit(e.target.value)}
-                                            placeholder="Valor"
+                                            onChange={e => setValorEdit(e.target.value)}
                                         />
                                         <button
-                                            onClick={() => {
+                                            className={styles.button}
+                                            onClick={() =>
                                                 handleEditGasto(gasto.id, {
                                                     ...gasto,
                                                     descricao: descricaoEdit,
                                                     valor: parseFloat(valorEdit),
                                                     sincronizado: false,
-                                                });
-                                                setEditandoId(null);
-                                            }}
+                                                })
+                                            }
                                         >
                                             Salvar
                                         </button>
-                                        <button onClick={() => setEditandoId(null)}>
+                                        <button
+                                            className={styles.buttonSecondary}
+                                            onClick={() => setEditandoId(null)}
+                                        >
                                             Cancelar
                                         </button>
                                     </>
                                 ) : (
                                     <>
-                                        <span>
-                                            {gasto.descricao} - R${gasto.valor} - {gasto.nome} - {gasto.familia_id}
-                                        </span>
+                                        <span>{gasto.descricao} – R${gasto.valor} – {gasto.nome}</span>
                                         <button
+                                            className={styles.buttonSmall}
                                             onClick={() => {
                                                 setEditandoId(gasto.id);
                                                 setDescricaoEdit(gasto.descricao);
@@ -164,7 +148,10 @@ export default function Dashboard() {
                                         >
                                             Editar
                                         </button>
-                                        <button onClick={() => handleRemoveGasto(gasto.id)}>
+                                        <button
+                                            className={styles.buttonSmallSecondary}
+                                            onClick={() => handleRemoveGasto(gasto.id)}
+                                        >
                                             Remover
                                         </button>
                                     </>
@@ -175,37 +162,28 @@ export default function Dashboard() {
                         <p>Nenhum gasto registrado.</p>
                     )}
                 </ul>
-            </div>
+            </section>
 
-            <div>
-                <button onClick={() => router.push("/")}>
-                    Logoff
-                </button>
-            </div>
+            <footer className={styles.footer}>
+                <button className={styles.logoffButton} onClick={() => router.push("/")}>Logoff</button>
+            </footer>
         </div>
     );
 }
 
-// Função para obter os dados do usuário
+// (mantive getUserData igual ao seu último exemplo)
 export async function getUserData() {
     try {
         const userId = localStorage.getItem("userId");
-
-        if (!userId) {
-            throw new Error("Usuário não autenticado.");
+        if (!userId) throw new Error("Usuário não autenticado.");
+        const res = await fetch(`http://192.168.0.3:3008/api/user?id=${userId}`);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Erro ao buscar usuário: ${res.status} - ${text}`);
         }
-
-        const response = await fetch(`http://192.168.0.2:3008/api/user?id=${userId}`);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro ao buscar usuário: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Erro na API:", error);
+        return await res.json();
+    } catch (err) {
+        console.error("Erro na API:", err);
         return null;
     }
 }

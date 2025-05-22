@@ -11,7 +11,7 @@ export default function Register() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const response = await fetch("http://192.168.0.2:3008/api/auth/register", {
+        const response = await fetch("http://192.168.0.3:3008/api/auth/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
