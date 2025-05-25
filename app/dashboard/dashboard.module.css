@@ -194,3 +194,20 @@
         font-size: 0.9rem;
     }
 }
+
+
+.syncIndicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+}
+
+.syncTrue {
+    background-color: green;
+}
+
+.syncFalse {
+    background-color: red;
+}

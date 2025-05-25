@@ -1,6 +1,13 @@
 "use client";
 import { useState } from "react";
 
+const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
+const host = process.env.NEXT_PUBLIC_API_HOST;
+const port = process.env.NEXT_PUBLIC_API_PORT;
+
+
+const url = `${protocolo}://${host}:${port}/api/auth/register`;
+
 export default function Register() {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
@@ -11,7 +18,7 @@ export default function Register() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const response = await fetch("http://192.168.0.3:3008/api/auth/register", {
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

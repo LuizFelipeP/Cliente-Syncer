@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { sha256 } from "js-sha256";
+
+
+
+
+
+async function hashSenha(senha) {
+    return sha256(senha);
+}
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -11,35 +20,62 @@ export default function Login() {
 
     async function handleLogin(e) {
         e.preventDefault();
-
         if (!email.includes("@")) {
             setErro("Email inválido!");
             return;
         }
 
-        const res = await fetch("http://192.168.0.3:3008/api/auth/login", {
-            method: "POST",
-            body: JSON.stringify({ email, senha }),
-            headers: { "Content-Type": "application/json" }
-        });
+        const senhaHash = await hashSenha(senha);
 
-        const data = await res.json();
-        localStorage.setItem("userId", data.userId); // 🔥 Salva o ID do usuário
-        console.log(res);
 
-        if (res.ok) {
-            router.push("/dashboard"); // Redireciona para o dashboard
-        } else {
-            setErro("Email ou senha incorretos!");
+        try {
+            const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
+            const host = process.env.NEXT_PUBLIC_API_HOST;
+            const port = process.env.NEXT_PUBLIC_API_PORT;
+
+            const url = `${protocolo}://${host}:${port}/api/auth/login`;
+
+            const res = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify({ email, senha }),
+                headers: { "Content-Type": "application/json" },
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                //Salva os dados para login offline
+                localStorage.setItem("userData", JSON.stringify(data));
+                //Também salva o hash para autenticar offline
+                localStorage.setItem("senhaHash", senhaHash);
+
+                router.push("/dashboard");
+            } else {
+                setErro("Email ou senha incorretos!");
+            }
+        } catch {
+           //tenta login offline
+            const stored = localStorage.getItem("userData");
+            const storedHash = localStorage.getItem("senhaHash");
+
+            if (stored) {
+                const user = JSON.parse(stored);
+                if (user.email === email && storedHash === senhaHash) {
+                    router.push("/dashboard");
+                    return;
+                }
+            }
+            setErro("Sem conexão e dados inválidos para login offline.");
         }
     }
 
     return (
-        <div>
-            <h1>Login</h1>
+        <div className="container">
+            <h1 className="title">Login</h1>
             {erro && <p style={{ color: "red" }}>{erro}</p>}
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} className="section">
                 <input
+                    className="input"
                     type="email"
                     placeholder="Email"
                     value={email}
@@ -47,13 +83,16 @@ export default function Login() {
                     required
                 />
                 <input
+                    className="input"
                     type="password"
                     placeholder="Senha"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     required
                 />
-                <button type="submit">Entrar</button>
+                <button type="submit" className="button">
+                    Entrar
+                </button>
             </form>
         </div>
     );

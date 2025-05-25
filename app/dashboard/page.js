@@ -1,10 +1,7 @@
-
-
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-    inicializarYjsParaGasto,
     addGasto,
     removeGasto,
     editGasto,
@@ -13,6 +10,7 @@ import {
 import { sincronizarComServidor } from "@/lib/sync";
 
 import styles from './dashboard.module.css';
+
 
 export default function Dashboard() {
     const router = useRouter();
@@ -31,10 +29,10 @@ export default function Dashboard() {
                 if (!user) throw new Error("Usuário não encontrado");
                 setUsuario(user);
 
-                // 1) Sincroniza TODOS os docs de gasto já inicializados
+                //Sincroniza todos os docs de gasto já inicializados
                 await sincronizarComServidor(user.familia_id);
 
-                // 2) Depois de aplicado o update, pega tudo do yjsClient
+                //Depois de aplicado o update, pega tudo do yjsClient
                 const todos = getGastos().filter(g => g.familia_id === user.familia_id && !g.removido);
                 setGastos(todos);
             } catch (err) {
@@ -46,18 +44,12 @@ export default function Dashboard() {
         init();
     }, []);
 
-    // --- Removi completamente este useEffect ---
     // useEffect(() => {
     //   if (!yGastos) return;
     //   const updateUI = () => { … }
     //   yGastos.observe(updateUI);
     //   return () => yGastos.unobserve(updateUI);
     // }, [usuario]);
-
-    const handleAddGasto = async (gasto) => {
-        await addGasto(gasto);
-        setGastos(prev => [...prev, gasto]);
-    };
 
     const handleRemoveGasto = (gastoId) => {
         removeGasto(gastoId);
@@ -75,6 +67,7 @@ export default function Dashboard() {
     const handleSync = async () => {
         if (!usuario) return;
         await sincronizarComServidor(usuario.familia_id);
+        await new Promise(resolve => setTimeout(resolve, 100));
         const todos = getGastos().filter(g => g.familia_id === usuario.familia_id && !g.removido);
         setGastos(todos);
     };
@@ -89,7 +82,7 @@ export default function Dashboard() {
                 <button className={styles.button} onClick={() => router.push("/edit-user")}>
                     Editar Informações
                 </button>
-                <button className={styles.button} onClick={handleSync}>🔄 Sincronizar</button>
+                <button className={styles.button} onClick={handleSync}>Sincronizar</button>
             </div>
 
             <section className={styles.section}>
@@ -137,7 +130,13 @@ export default function Dashboard() {
                                     </>
                                 ) : (
                                     <>
-                                        <span>{gasto.descricao} – R${gasto.valor} – {gasto.nome}</span>
+                                        <span>
+  {gasto.descricao} – R${gasto.valor} – {gasto.nome}
+                                            <span
+                                                className={`${styles.syncIndicator} ${gasto.sincronizado ? styles.syncTrue : styles.syncFalse}`}
+                                                title={gasto.sincronizado ? "Sincronizado" : "Não sincronizado"}
+                                            />
+</span>
                                         <button
                                             className={styles.buttonSmall}
                                             onClick={() => {
@@ -171,19 +170,35 @@ export default function Dashboard() {
     );
 }
 
-// (mantive getUserData igual ao seu último exemplo)
+
 export async function getUserData() {
+    // Tenta pegar do servidor
     try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) throw new Error("Usuário não autenticado.");
-        const res = await fetch(`http://192.168.0.3:3008/api/user?id=${userId}`);
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Erro ao buscar usuário: ${res.status} - ${text}`);
+        const stored = localStorage.getItem("userData");
+        const userId = stored ? JSON.parse(stored).userId : null;
+        if (!userId) throw new Error("Usuário não encontrado localmente");
+
+        const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
+        const host = process.env.NEXT_PUBLIC_API_HOST;
+        const port = process.env.NEXT_PUBLIC_API_PORT;
+
+        const url = `${protocolo}://${host}:${port}/api/user?id=${userId}`;
+
+        //Se tiver internet, tenta fetch
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Falha ao buscar usuário");
+
+        const data = await res.json();
+        // Atualiza o cache local com dados mais recentes
+        localStorage.setItem("userData", JSON.stringify(data));
+        return data;
+    } catch {
+        // Em offline ou erro, retorna o que está em localStorage
+        const stored = localStorage.getItem("userData");
+        if (stored) {
+            return JSON.parse(stored);
         }
-        return await res.json();
-    } catch (err) {
-        console.error("Erro na API:", err);
         return null;
     }
 }
+

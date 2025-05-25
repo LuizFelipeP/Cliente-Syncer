@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
+const host = process.env.NEXT_PUBLIC_API_HOST;
+const port = process.env.NEXT_PUBLIC_API_PORT;
+
+const url = `${protocolo}://${host}:${port}/api/auth/update-user`;
+
 export default function EditUserPage() {
     const router = useRouter();
     const [nome, setNome] = useState("");
@@ -17,7 +23,7 @@ export default function EditUserPage() {
 
             try {
                 const response = await fetch(
-                    `http://192.168.0.3:3008/api/user?id=${userId}`
+                    url
                 );
                 if (!response.ok) throw new Error("Erro ao carregar usuário");
 
@@ -38,7 +44,7 @@ export default function EditUserPage() {
         if (!userId) return;
 
         try {
-            const response = await fetch("http://192.168.0.3:3008/api/auth/update-user", {
+            const response = await fetch(url, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -48,11 +54,11 @@ export default function EditUserPage() {
 
             if (!response.ok) throw new Error("Erro ao atualizar usuário");
 
-            setMensagem("✅ Dados atualizados com sucesso!");
+            setMensagem("Dados atualizados com sucesso!");
             setTimeout(() => router.push("/dashboard"));
         } catch (error) {
             console.error("Erro ao atualizar usuário:", error);
-            setMensagem("❌ Erro ao atualizar dados. Tente novamente.");
+            setMensagem("Erro ao atualizar dados. Tente novamente.");
         }
     };
 

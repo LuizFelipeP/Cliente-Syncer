@@ -18,13 +18,17 @@ export default function AddGasto() {
             return;
         }
 
-        const userId = localStorage.getItem("userId");
-        if (!userId) {
+        const userData = localStorage.getItem("userData");
+        if (!userData) {
             alert("Erro: Usuário não autenticado!");
             return;
         }
 
+
+
         const usuario = await getUserData();
+
+        const userId = usuario.id; // ou `user.userId` se for esse o nome
 
         const gastoId = uuidv4(); // Gasto ID individual
 
@@ -43,10 +47,10 @@ export default function AddGasto() {
 
         try {
             await addGasto(novoGasto);
-            console.log("📢 Gasto salvo localmente:", novoGasto);
+            console.log("Gasto salvo localmente:", novoGasto);
             router.push("/dashboard");
         } catch (error) {
-            console.error("❌ Erro ao adicionar gasto:", error);
+            console.error("Erro ao adicionar gasto:", error);
             alert("Erro ao salvar gasto.");
         }
     };
