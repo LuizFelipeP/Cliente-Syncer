@@ -2,6 +2,15 @@
 
 git clone https://github.com/LuizFelipeP/Cliente-Syncer.git
 
+ou
+
+No WebStorm clicar no nome do projeto e selecionar 'Clone Repository'.
+
+![img.png](img.png)
+
+Depois informar o link
+https://github.com/LuizFelipeP/Cliente-Syncer.git
+
 ## 2. Instalar Dependências
 
 npm install
@@ -21,6 +30,7 @@ NEXT_PUBLIC_API_PORT=3008
 ``` bash
 npm run build
 npm run start
+
 
 ou
 
