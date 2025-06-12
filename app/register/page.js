@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
+import styles from "./register.module.css"; // <- importa os estilos
 
 const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
 const host = process.env.NEXT_PUBLIC_API_HOST;
 const port = process.env.NEXT_PUBLIC_API_PORT;
 
 
-const url = `${protocolo}://${host}:${port}/api/auth/register`;
+const url = `${protocolo}://${host}:${port}/api/auth/registro`;
 
 export default function Register() {
     const [email, setEmail] = useState("");
@@ -37,35 +38,42 @@ export default function Register() {
     }
 
     return (
-        <div>
+        <main className={styles.main}>
+        <div className={styles.container}>
+            <h2 className={styles.title}>Registrar</h2>
             <form onSubmit={handleSubmit}>
                 <input
+                    className={styles.input}
                     type="text"
                     placeholder="Nome"
                     onChange={(e) => setUsername(e.target.value)}
                     required
                 />
                 <input
+                    className={styles.input}
                     type="email"
                     placeholder="E-mail"
                     onChange={(e) => setEmail(e.target.value)}
                     required
                 />
                 <input
+                    className={styles.input}
                     type="password"
                     placeholder="Senha"
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
                 <input
+                    className={styles.input}
                     type="text"
                     placeholder="Nome da Família"
                     onChange={(e) => setFamilia(e.target.value)}
                     required
                 />
-                <button type="submit">Registrar</button>
+                <button type="submit" className={styles.button}>Registrar</button>
             </form>
-            {error && <div style={{ color: "red" }}>{error}</div>}
+            {error && <div className={styles.error}>{error}</div>}
         </div>
+        </main>
     );
 }

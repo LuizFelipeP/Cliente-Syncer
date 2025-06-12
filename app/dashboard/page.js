@@ -50,6 +50,7 @@ export default function Dashboard() {
     //   yGastos.observe(updateUI);
     //   return () => yGastos.unobserve(updateUI);
     // }, [usuario]);
+    //
 
     const handleRemoveGasto = (gastoId) => {
         removeGasto(gastoId);
@@ -75,6 +76,7 @@ export default function Dashboard() {
     if (isLoading) return <p>Carregando...</p>;
 
     return (
+        <main className={styles.main}>
         <div className={styles.container}>
             <h2 className={styles.title}>Bem-vindo, {usuario.nome}</h2>
 
@@ -167,33 +169,44 @@ export default function Dashboard() {
                 <button className={styles.logoffButton} onClick={() => router.push("/")}>Logoff</button>
             </footer>
         </div>
+        </main>
     );
 }
 
 
 export async function getUserData() {
-    // Tenta pegar do servidor
     try {
-        const stored = localStorage.getItem("userData");
-        const userId = stored ? JSON.parse(stored).userId : null;
-        if (!userId) throw new Error("Usuário não encontrado localmente");
-
         const protocolo = process.env.NEXT_PUBLIC_API_PROTOCOL;
         const host = process.env.NEXT_PUBLIC_API_HOST;
         const port = process.env.NEXT_PUBLIC_API_PORT;
 
-        const url = `${protocolo}://${host}:${port}/api/user?id=${userId}`;
+        const stored = localStorage.getItem("userData");
+        console.log(stored);
+        const userId = stored ? JSON.parse(stored).userId : null;
 
-        //Se tiver internet, tenta fetch
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Falha ao buscar usuário");
+        //if (!userId) throw new Error("Usuário não encontrado localmente");
+
+        const url = `${protocolo}://${host}:${port}/api/buscarusuario?id=${userId}`;
+
+        const res = await fetch(url, {
+            cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error("Falha ao buscar usuário da API");
 
         const data = await res.json();
-        // Atualiza o cache local com dados mais recentes
-        localStorage.setItem("userData", JSON.stringify(data));
+
+        localStorage.setItem("userData", JSON.stringify({
+            userId: data.id,
+            nome: data.nome,
+            email: data.email,
+            familia_id: data.familia_id,
+        }));
+        console.log(data);
         return data;
-    } catch {
-        // Em offline ou erro, retorna o que está em localStorage
+    } catch (err) {
+        console.warn("Erro ao buscar usuário da API, usando localStorage:", err.message);
+
         const stored = localStorage.getItem("userData");
         if (stored) {
             return JSON.parse(stored);
@@ -201,4 +214,5 @@ export async function getUserData() {
         return null;
     }
 }
+
 

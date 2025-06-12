@@ -1,25 +1,39 @@
-.container {
+.main {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0fdf4;
     padding: 24px;
-    max-width: 720px;
-    margin: 0 auto;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    max-width: 720px;
+    width: 100%;
+    background-color: white;
+    padding: 32px 24px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     color: #222;
 }
 
 .title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #0f766e;
+    margin-bottom: 10px;
     text-align: center;
-    color: #fdfdfd;
 }
 
 .subtitle {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 12px;
-    border-bottom: 2px solid #4a90e2;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #0f766e;
     padding-bottom: 6px;
+    color: #4b5563;
+    text-align: center;
 }
 
 .buttonsRow {
@@ -31,58 +45,59 @@
 }
 
 .button {
-    background-color: #4a90e2;
-    border: none;
+    background-color: #0d9488;
     color: white;
-    padding: 10px 22px;
+    padding: 12px 24px;
     border-radius: 28px;
     font-weight: 600;
+    border: none;
     cursor: pointer;
-    box-shadow: 0 3px 6px rgba(74, 144, 226, 0.4);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
     transition: background-color 0.3s ease;
 }
 
 .button:hover {
-    background-color: #357abd;
+    background-color: #0f766e;
 }
 
 .buttonSecondary {
-    background-color: #e0e0e0;
-    color: #333;
+    background-color: #e5e7eb;
+    color: #0f766e;
+    border: none;
     border-radius: 28px;
-    padding: 10px 18px;
-    margin-left: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
     transition: background-color 0.3s ease;
 }
 
 .buttonSecondary:hover {
-    background-color: #cfcfcf;
+    background-color: #d1d5db;
 }
 
 .buttonSmall {
-    background-color: #4a90e2;
+    background-color: #0d9488;
     color: white;
-    border: none;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
-    margin-left: 8px;
     font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
     transition: background-color 0.25s ease;
 }
 
 .buttonSmall:hover {
-    background-color: #357abd;
+    background-color: #0f766e;
 }
 
 .buttonSmallSecondary {
     background-color: #f0f0f0;
-    color: #555;
-    border: none;
-    padding: 6px 12px;
+    color: #0f766e;
+    padding: 6px 14px;
     border-radius: 20px;
-    margin-left: 8px;
     font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
     transition: background-color 0.25s ease;
 }
@@ -137,7 +152,7 @@
 
 .input:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: #0f766e;
 }
 
 .footer {
@@ -148,8 +163,8 @@
 
 .logoffButton {
     background-color: transparent;
-    color: #4a90e2;
-    border: 2px solid #4a90e2;
+    color: #0f766e;
+    border: 2px solid #0f766e;
     padding: 10px 24px;
     border-radius: 30px;
     font-weight: 700;
@@ -158,20 +173,19 @@
 }
 
 .logoffButton:hover {
-    background-color: #4a90e2;
+    background-color: #0f766e;
     color: white;
 }
 
-/* Responsivo para celular */
-@media (max-width: 600px) {
+@media (max-width: 500px) {
     .container {
         padding: 16px 12px;
     }
 
-    .buttonsRow {
-        flex-direction: column;
-        gap: 12px;
-    }
+    /*.buttonsRow {*/
+    /*    flex-direction: column;*/
+    /*    gap: 12px;*/
+    /*}*/
 
     .button, .buttonSecondary {
         width: 100%;
@@ -179,7 +193,7 @@
     }
 
     .gastoItem {
-        flex-direction: column;
+        /*flex-direction: column;*/
         align-items: flex-start;
     }
 
@@ -192,9 +206,10 @@
         width: auto;
         padding: 8px 14px;
         font-size: 0.9rem;
+
+
     }
 }
-
 
 .syncIndicator {
     display: inline-block;

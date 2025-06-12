@@ -1,0 +1,81 @@
+.main {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0fdf4;
+    padding: 24px;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    max-width: 480px;
+    width: 100%;
+    background-color: white;
+    padding: 32px 24px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+.container form > div {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.container label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #065f46;
+}
+
+.container input[type="text"],
+.container input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #0f766e;
+    margin-bottom: 16px;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 12px;
+    border: none;
+}
+
+.submit {
+    background-color: #0d9488;
+    color: white;
+}
+
+.submit:hover {
+    background-color: #0f766e;
+}
+
+.back {
+    background-color: #e5e7eb;
+    color: #0f766e;
+}
+
+.back:hover {
+    background-color: #d1d5db;
+}
