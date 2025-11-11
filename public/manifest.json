@@ -18,5 +18,19 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "public/screenshot/celu.png",
+      "sizes": "540x1170",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "public/screenshot/Screenshot_1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+    ]
 }
